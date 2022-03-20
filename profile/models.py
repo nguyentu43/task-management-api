@@ -1,6 +1,6 @@
 from django.db import models
 from django.db.models.signals import pre_save
-from config.db.receivers import set_updated_at_pre_save
+from taskmanagement.db.receivers import set_updated_at_pre_save
 
 
 class Profile(models.Model):

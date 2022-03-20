@@ -1,7 +1,7 @@
-from config.base.views import ModelViewSetWithPermission
+from taskmanagement.base.views import ModelViewSetWithPermission
 from .serializers import TaskSerializer, TodoItemSerializer, CommentSerializer, ActivitySerializer, ReactionSerializer
 from .models import Task, TodoItem, Comment, Activity
-from config.utils.permissions import IsOwner, IsParticipantTask
+from taskmanagement.utils.permissions import IsOwner, IsParticipantTask
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status

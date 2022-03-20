@@ -20,6 +20,7 @@ drf-yasg = "*"
 channels = "*"
 channels-redis = "*"
 django-storages = "*"
+daphne = "*"
 
 [dev-packages]
 

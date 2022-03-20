@@ -4,8 +4,8 @@ from rest_framework import status
 from profile.models import Profile
 from .models import Project, Section, Tag
 from .serializers import ProjectSerializer, SectionSerializer, TagSerializer
-from config.base.views import ModelViewSetWithPermission
-from config.utils.permissions import IsOwner, IsParticipantProject
+from taskmanagement.base.views import ModelViewSetWithPermission
+from taskmanagement.utils.permissions import IsOwner, IsParticipantProject
 from django.db.models import Q
 
 

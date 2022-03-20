@@ -1,8 +1,8 @@
-from config.base.views import ModelViewSetWithPermission
+from taskmanagement.base.views import ModelViewSetWithPermission
 from profile.models import Profile
 from .serializers import MessageSerializer
 from project.models import Project
-from config.utils.permissions import IsParticipantProject, IsOwner
+from taskmanagement.utils.permissions import IsParticipantProject, IsOwner
 
 
 class MessageViewSet(ModelViewSetWithPermission):

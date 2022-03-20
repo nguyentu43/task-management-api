@@ -1,4 +1,4 @@
-"""config URL Configuration
+"""taskmanagement URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/4.0/topics/http/urls/
@@ -14,10 +14,18 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django.shortcuts import redirect
 from django.urls import path, include, re_path
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+
+from django.contrib.staticfiles.views import serve
+
+
+def return_static(request, path, insecure=True, **kwargs):
+    return serve(request, path, insecure, **kwargs)
+
 
 apipatterns = [
     path('profiles/', include('profile.urls')),
@@ -34,8 +42,13 @@ schema_view = get_schema_view(
     permission_classes=[permissions.AllowAny],
 )
 
+def redirect_swagger(request):
+    return redirect('/swagger')
+
 urlpatterns = [
+    path(r'', redirect_swagger),
     path('admin/', admin.site.urls),
+    re_path(r'^static/(?P<path>.*)$', return_static, name='static'),
     path('api/', include(apipatterns)),
     path('storage/', include('storage.urls')),
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
