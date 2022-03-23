@@ -70,7 +70,7 @@ class TagViewSet(ModelViewSetWithPermission):
         print(self.request.data)
         try:
             p = Project.objects.get(pk=self.kwargs['project_pk'])
-            return p.section_set.all()
+            return p.tag_set.all()
         except Project.DoesNotExist:
             return []
 

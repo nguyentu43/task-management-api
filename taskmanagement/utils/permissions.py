@@ -10,10 +10,10 @@ class IsOwner(IsAuthenticated):
 class IsParticipantProject(IsAuthenticated):
     def has_object_permission(self, request, view, obj):
         p = Profile.objects.get(id=request.user.username)
-        return (p in obj.project.participants) or (obj.project.owner == p)
+        return (p in obj.project.participants.all()) or (obj.project.owner == p)
 
 
 class IsParticipantTask(IsAuthenticated):
     def has_object_permission(self, request, view, obj):
         p = Profile.objects.get(id=request.user.username)
-        return (p in obj.task.participants) or (obj.task.owner == p)
+        return (p in obj.task.participants.all()) or (obj.task.owner == p)

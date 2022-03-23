@@ -9,6 +9,7 @@ from urllib.parse import unquote
 from rest_framework.permissions import IsAuthenticated
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from django.db.models.query import Q
 
 
 @csrf_exempt
@@ -59,6 +60,10 @@ def search_profile(request):
         except IndexError:
             continue
 
-    profiles = Profile.objects.filter(**query_string)
+    filters = Q()
+    for key, value in query_string.items():
+        filters = filters | Q(**{key:value})
+
+    profiles = Profile.objects.filter(filters)
     serializer = ProfileSerializer(profiles, many=True)
     return Response(serializer.data)
