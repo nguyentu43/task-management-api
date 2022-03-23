@@ -1,5 +1,6 @@
 from django.contrib import admin
 from .models import Task, TodoItem, Comment, Activity, Reaction
+from django_admin_relation_links import AdminChangeLinksMixin
 
 
 class TodoItemInline(admin.TabularInline):
@@ -14,9 +15,10 @@ class ActivityInline(admin.TabularInline):
     model = Activity
 
 
-class TaskAdmin(admin.ModelAdmin):
-    list_display = ['title', 'created_at', 'project', 'owner']
-    list_display_links = ['title', 'project', 'owner']
+class TaskAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
+    list_display = ['title', 'created_at', 'project_link', 'owner_link']
+    list_display_links = ['title']
+    change_links = ['project', 'owner']
     inlines = [TodoItemInline, CommentInline, ActivityInline]
 
 
@@ -24,15 +26,17 @@ class ReactionInline(admin.TabularInline):
     model = Reaction
 
 
-class CommentAdmin(admin.ModelAdmin):
-    list_display = ('content', 'owner', 'created_at', 'task')
-    list_display_links = ['content', 'owner', 'task']
+class CommentAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
+    list_display = ('content', 'owner_link', 'created_at', 'task_link')
+    list_display_links = ['content']
+    change_links = ['owner', 'task']
     inlines = [ReactionInline]
 
 
-class ActivityAdmin(admin.ModelAdmin):
-    list_display = ['title', 'type', 'task']
-    list_display_links = ['title', 'task']
+class ActivityAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
+    list_display = ['title', 'type', 'task_link']
+    list_display_links = ['title']
+    change_links = ['task']
 
 
 admin.site.register(Task, TaskAdmin)

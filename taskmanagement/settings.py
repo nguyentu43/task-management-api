@@ -51,10 +51,12 @@ INSTALLED_APPS = [
     'drf_yasg',
     'channels',
     'websocket',
-    'storage'
+    'storage',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -63,6 +65,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.RemoteUserMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    
 ]
 
 ROOT_URLCONF = 'taskmanagement.urls'
@@ -181,3 +184,10 @@ CHANNEL_LAYERS = {
 DEFAULT_FILE_STORAGE = 'storages.backends.ftp.FTPStorage'
 FTP_STORAGE_LOCATION = env.get('FTP_HOST')
 
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:4200"
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:4200",
+]

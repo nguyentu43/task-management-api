@@ -1,4 +1,4 @@
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from auth0.utils import get_userinfo
@@ -6,9 +6,13 @@ from profile.models import Profile
 from profile.serializers import ProfileSerializer
 from django.views.decorators.csrf import csrf_exempt
 from urllib.parse import unquote
+from rest_framework.permissions import IsAuthenticated
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 
 
 @csrf_exempt
+@swagger_auto_schema(methods=['post'], responses={ 200: openapi.Response('post profile', ProfileSerializer)})
 @api_view(['POST'])
 def add_profile(request):
     token = request.META['HTTP_AUTHORIZATION']
@@ -26,7 +30,22 @@ def add_profile(request):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+@swagger_auto_schema(methods=['get'], responses={ 200: openapi.Response('get profile', ProfileSerializer)})
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_my_profile(request):
+    try:
+        me = Profile.objects.get(pk=request.user.username)
+    except Profile.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    return Response(ProfileSerializer(me).data)
+
+@swagger_auto_schema(methods=['get'], manual_parameters=[
+    openapi.Parameter('nickname', openapi.IN_QUERY, type=openapi.TYPE_STRING),
+    openapi.Parameter('email', openapi.IN_QUERY, type=openapi.TYPE_STRING)
+], responses={ 200: openapi.Response('get profiles', ProfileSerializer(many=True))})
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def search_profile(request):
     icontains_fields = ['nickname']
 

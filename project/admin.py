@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models import Project, Section, Tag
 from chat.models import Message
+from django_admin_relation_links import AdminChangeLinksMixin
 
 
 class ChatInline(admin.TabularInline):
@@ -15,9 +16,10 @@ class TagInline(admin.TabularInline):
     model = Tag
 
 
-class ProjectAdmin(admin.ModelAdmin):
-    list_display = ['title', 'created_at', 'owner']
-    list_display_links = ['title', 'owner']
+class ProjectAdmin(AdminChangeLinksMixin, admin.ModelAdmin):
+    list_display = ['title', 'created_at', 'owner_link']
+    list_display_links = ['title']
+    change_links = ['owner']
     inlines = [SectionInline, TagInline, ChatInline]
 
 

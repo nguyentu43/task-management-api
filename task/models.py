@@ -146,13 +146,16 @@ def send_activity_ws(sender, instance, *args, **kwargs):
     user_set = set(instance.task.project.participants.values_list('id', flat=True))
     user_set.add(instance.task.project.owner.id)
 
-    for user_id in user_set:
-        room_group_name = 'activity_{}'.format(user_id)
-        channel_layer = get_channel_layer()
-        async_to_sync(channel_layer.group_send)(
-            room_group_name,
-            instance
-        )
+    try:
+        for user_id in user_set:
+            room_group_name = 'activity_{}'.format(user_id)
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                room_group_name,
+                instance
+            )
+    except ConnectionRefusedError:
+        print('Redis connect failed')
 
 
 post_save.connect(send_activity_ws, sender=Activity)

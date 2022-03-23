@@ -5,6 +5,9 @@ from taskmanagement.utils.permissions import IsOwner, IsParticipantTask
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
+from profile.models import Profile
+from django.db.models.query import Q
+
 
 
 class TaskViewSet(ModelViewSetWithPermission):
@@ -77,3 +80,23 @@ class ReactionViewSet(ModelViewSetWithPermission):
 
     def get_queryset(self):
         return Comment.objects.filter(pk=self.kwargs['comment_pk']).reactions.all()
+
+class TaskByProfileViewSet(ModelViewSetWithPermission):
+    serializer_class = TaskSerializer
+    
+    def get_queryset(self):
+        try:
+            p = Profile.objects.get(id=self.request.user.username)
+            return Task.objects.filter(Q(project__owner=p) | Q(project__participants__in=[p])).distinct()
+        except Profile.DoesNotExist:
+            return []
+
+class TodoItemByProfileViewSet(ModelViewSetWithPermission):
+    serializer_class = TodoItemSerializer
+    
+    def get_queryset(self):
+        try:
+            p = Profile.objects.get(id=self.request.user.username)
+            return TodoItem.objects.filter(Q(owner=p) | Q(participants__in=[p])).distinct()
+        except Profile.DoesNotExist:
+            return []
