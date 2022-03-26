@@ -1,3 +1,4 @@
+from async_timeout import timeout
 from django.contrib.auth import authenticate
 import json
 import jwt
@@ -16,7 +17,7 @@ def jwt_get_username_from_payload_handler(payload):
 
 def jwt_decode_token(token):
     header = jwt.get_unverified_header(token)
-    jwks = requests.get('https://{}/.well-known/jwks.json'.format(AUTH0_DOMAIN)).json()
+    jwks = requests.get('https://{}/.well-known/jwks.json'.format(AUTH0_DOMAIN), timeout=2).json()
     public_key = None
     for jwk in jwks['keys']:
         if jwk['kid'] == header['kid']:
@@ -30,4 +31,8 @@ def jwt_decode_token(token):
 
 
 def get_userinfo(token):
-    return requests.get('https://{}/userinfo'.format(AUTH0_DOMAIN), headers={'Authorization': token}).json()
+    return requests.get(
+        'https://{}/userinfo'.format(AUTH0_DOMAIN), 
+        headers={'Authorization': token},
+        timeout=2
+    ).json()

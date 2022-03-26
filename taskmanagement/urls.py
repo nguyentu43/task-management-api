@@ -21,7 +21,7 @@ from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
 from django.contrib.staticfiles.views import serve
-from task.views import TaskByProfileViewSet, TodoItemByProfileViewSet
+from task.views import TaskByProfileViewSet, TodoItemByProfileViewSet, ActivitiesByProfileViewSet
 
 
 def return_static(request, path, insecure=True, **kwargs):
@@ -31,6 +31,7 @@ def return_static(request, path, insecure=True, **kwargs):
 apipatterns = [
     path('tasks/', TaskByProfileViewSet.as_view({ 'get': 'list' })),
     path('todo-items/', TodoItemByProfileViewSet.as_view({ 'get': 'list' })),
+    path('activities/', ActivitiesByProfileViewSet.as_view({ 'get': 'list' })),
     path('profiles/', include('profile.urls')),
     path('projects/', include('project.urls')),
 ]

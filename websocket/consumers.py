@@ -56,7 +56,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if 'project' in message:
             del message['project']
 
-        # Send message to WebSocket
         await self.send(text_data=json.dumps(message))
 
 
@@ -68,7 +67,6 @@ class ActivityConsumer(AsyncWebsocketConsumer):
             self.user = self.scope['user']
         self.room_group_name = 'activity_%s' % self.user.id
 
-        # Join room group
         await self.channel_layer.group_add(
             self.room_group_name,
             self.channel_name
@@ -77,8 +75,12 @@ class ActivityConsumer(AsyncWebsocketConsumer):
         await self.accept()
 
     async def disconnect(self, close_code):
-        # Leave room group
         await self.channel_layer.group_discard(
             self.room_group_name,
             self.channel_name
         )
+
+    async def send_activity(self, event):
+        message = event['activity']
+
+        await self.send(text_data=message)

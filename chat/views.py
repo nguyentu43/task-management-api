@@ -3,6 +3,7 @@ from profile.models import Profile
 from .serializers import MessageSerializer
 from project.models import Project
 from taskmanagement.utils.permissions import IsParticipantProject, IsOwner
+from rest_framework.pagination import LimitOffsetPagination
 
 
 class MessageViewSet(ModelViewSetWithPermission):
@@ -15,11 +16,12 @@ class MessageViewSet(ModelViewSetWithPermission):
     }
 
     serializer_class = MessageSerializer
+    pagination_class = LimitOffsetPagination
 
     def get_queryset(self):
         try:
             p = Project.objects.get(pk=self.kwargs['project_pk'])
-            return p.message_set.all()
+            return p.message_set.order_by('-created_at').all()
         except Project.DoesNotExist:
             return []
 

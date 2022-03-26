@@ -1,5 +1,6 @@
 from django.db import models
 from django.db.models.signals import pre_save, post_save
+from django.forms import model_to_dict
 
 from taskmanagement.db.receivers import set_updated_at_pre_save
 from profile.models import Profile
@@ -7,15 +8,7 @@ from project.models import Tag, Section, Project
 
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
-
-
-# Create your models here.
-
-class ReactionType(models.TextChoices):
-    Love = 'Love'
-    Like = 'Like'
-    Smile = 'Smile'
-
+import json
 
 class TaskStatus(models.TextChoices):
     Complete = 'Complete'
@@ -43,9 +36,7 @@ class Task(models.Model):
 
 class TodoItem(models.Model):
     title = models.CharField(max_length=255, blank=False, null=False)
-    description = models.TextField(blank=True, null=True)
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
-    order = models.IntegerField(null=False, blank=False)
     due_datetime = models.DateTimeField(auto_now_add=True)
     created_at = models.DateTimeField(auto_now_add=True)
     participants = models.ManyToManyField(Profile, blank=True)
@@ -67,31 +58,20 @@ class Activity(models.Model):
     def __str__(self):
         return self.title
 
-
 class Comment(models.Model):
     content = models.TextField(blank=False, null=False)
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
     owner = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    likes = models.ManyToManyField(Profile, blank=True, related_name='like_comments')
 
     def __str__(self):
         return self.content
 
-class Reaction(models.Model):
-    owner = models.ForeignKey(Profile, on_delete=models.CASCADE)
-    type = models.CharField(max_length=25, choices=ReactionType.choices, default=ReactionType.Like)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now_add=True)
-    comment = models.ForeignKey(Comment, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return self.type
-
 pre_save.connect(set_updated_at_pre_save, sender=Task)
 pre_save.connect(set_updated_at_pre_save, sender=TodoItem)
 pre_save.connect(set_updated_at_pre_save, sender=Comment)
-pre_save.connect(set_updated_at_pre_save, sender=Reaction)
 
 
 def create_activity(sender, instance, *args, **kwargs):
@@ -121,13 +101,6 @@ def create_activity(sender, instance, *args, **kwargs):
         )
 
     if type == 'TodoItem':
-        if instance.is_done:
-            Activity.objects.create(
-                title=title,
-                type=type,
-                content='{} has been done'.format(instance.title),
-                task_id=instance.task_id
-            )
         if not instance.is_done and created:
             Activity.objects.create(
                 title=title,
@@ -146,16 +119,17 @@ def send_activity_ws(sender, instance, *args, **kwargs):
     user_set = set(instance.task.project.participants.values_list('id', flat=True))
     user_set.add(instance.task.project.owner.id)
 
+    text_data = json.dumps(model_to_dict(instance));
+
     try:
         for user_id in user_set:
             room_group_name = 'activity_{}'.format(user_id)
             channel_layer = get_channel_layer()
             async_to_sync(channel_layer.group_send)(
                 room_group_name,
-                instance
+                {'type': 'send_activity', 'activity': text_data}
             )
     except ConnectionRefusedError:
         print('Redis connect failed')
-
 
 post_save.connect(send_activity_ws, sender=Activity)

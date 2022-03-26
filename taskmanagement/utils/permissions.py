@@ -16,4 +16,4 @@ class IsParticipantProject(IsAuthenticated):
 class IsParticipantTask(IsAuthenticated):
     def has_object_permission(self, request, view, obj):
         p = Profile.objects.get(id=request.user.username)
-        return (p in obj.task.participants.all()) or (obj.task.owner == p)
+        return (p in obj.task.project.participants.all()) or (p == obj.task.project.owner)

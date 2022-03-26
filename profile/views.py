@@ -11,6 +11,8 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from django.db.models.query import Q
 
+from project.models import Project
+
 
 @csrf_exempt
 @swagger_auto_schema(methods=['post'], responses={ 200: openapi.Response('post profile', ProfileSerializer)})
@@ -18,15 +20,23 @@ from django.db.models.query import Q
 def add_profile(request):
     token = request.META['HTTP_AUTHORIZATION']
     userinfo = get_userinfo(token)
-    profile, _ = Profile.objects.get_or_create(
-        id=request.user.username,
-        defaults={
-            'email': userinfo['email'],
-            'nickname': userinfo['nickname'],
-            'name': userinfo['name'],
-            'picture': userinfo['picture']
-        }
-    )
+    data = {
+        'email': userinfo['email'],
+        'nickname': userinfo['nickname'],
+        'name': userinfo['name'],
+        'picture': userinfo['picture'],
+        'id': request.user.username
+    }
+
+    try:
+        profile = Profile.objects.get(email=data['email'])
+        if profile.id != data['id']:
+            provider = profile.id.split('.')[0]
+            return Response('This account has been register with provider ' + provider, 
+            status=status.HTTP_406_NOT_ACCEPTABLE)
+    except Profile.DoesNotExist:
+        profile = Profile.objects.create(**data)
+
     serializer = ProfileSerializer(profile)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -42,28 +52,31 @@ def get_my_profile(request):
     return Response(ProfileSerializer(me).data)
 
 @swagger_auto_schema(methods=['get'], manual_parameters=[
-    openapi.Parameter('nickname', openapi.IN_QUERY, type=openapi.TYPE_STRING),
-    openapi.Parameter('email', openapi.IN_QUERY, type=openapi.TYPE_STRING)
+    openapi.Parameter('nickname', openapi.IN_QUERY, type=openapi.TYPE_STRING, required=True),
+    openapi.Parameter('email', openapi.IN_QUERY, type=openapi.TYPE_STRING, required=True),
+    openapi.Parameter('project', openapi.IN_QUERY, type=openapi.TYPE_STRING)
 ], responses={ 200: openapi.Response('get profiles', ProfileSerializer(many=True))})
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def search_profile(request):
-    icontains_fields = ['nickname']
+    support_fields = ['nickname', 'email', 'project']
 
     query_string = {}
     for field in request.META['QUERY_STRING'].split('&'):
-        try:
-            name, value = field.split('=')
-            if name in icontains_fields:
-                name = name + '__icontains'
-            query_string[name] = unquote(value)
-        except IndexError:
+        name, value = field.split('=')
+        if name not in support_fields:
             continue
+        query_string[name] = unquote(value)
 
-    filters = Q()
-    for key, value in query_string.items():
-        filters = filters | Q(**{key:value})
-
-    profiles = Profile.objects.filter(filters)
-    serializer = ProfileSerializer(profiles, many=True)
+    try:
+        project_pk = query_string['project']
+        project = Project.objects.get(pk=project_pk)
+        profiles = {project.owner, *project.participants.all()}
+        serializer = ProfileSerializer(profiles, many=True)
+    except KeyError:
+        profiles = Profile.objects.filter(
+            Q(nickname__icontains=query_string['nickname']) | 
+            Q(email=query_string['email'])
+        )
+        serializer = ProfileSerializer(profiles, many=True)
     return Response(serializer.data)

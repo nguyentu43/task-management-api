@@ -38,10 +38,6 @@ class SectionViewSet(ModelViewSetWithPermission):
 
     permission_classes = [IsParticipantProject]
 
-    permission_classes_by_action = {
-        'destroy': [IsOwner]
-    }
-
     def get_queryset(self):
         print(self.request.data)
         try:
@@ -61,10 +57,6 @@ class TagViewSet(ModelViewSetWithPermission):
     serializer_class = TagSerializer
 
     permission_classes = [IsParticipantProject]
-
-    permission_classes_by_action = {
-        'destroy': [IsOwner]
-    }
 
     def get_queryset(self):
         print(self.request.data)

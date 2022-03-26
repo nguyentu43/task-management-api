@@ -1,5 +1,5 @@
 from django.http import HttpResponse
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.permissions import IsAuthenticated
 from storages.backends.ftp import FTPStorageException
 
@@ -12,10 +12,20 @@ from datetime import datetime
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from .serializers import FileSerializer
+from rest_framework.parsers import MultiPartParser
 
 
-@swagger_auto_schema(methods=['post'], responses={200: openapi.Response('storage response', FileSerializer)})
+@swagger_auto_schema(
+    methods=['post'],
+    manual_parameters=[
+        openapi.Parameter('project_pk', openapi.IN_FORM, type=openapi.TYPE_STRING, required=True),
+        openapi.Parameter('task_pk', openapi.IN_FORM, type=openapi.TYPE_STRING, required=True),
+        openapi.Parameter('file', openapi.IN_FORM, type=openapi.TYPE_FILE, required=True)
+    ],
+    responses={200: openapi.Response('storage response', FileSerializer)}
+)
 @api_view(['POST'])
+@parser_classes([MultiPartParser])
 @permission_classes([IsAuthenticated])
 def upload_file_view(request):
     form = UploadFileForm(request.POST, request.FILES)
@@ -34,7 +44,7 @@ def upload_file_view(request):
 def get_files_view(request, project_pk, task_pk):
     return Response(get_files(project_pk, task_pk))
 
-@swagger_auto_schema(method='get', deprecated=True)
+@swagger_auto_schema(method='get', deprecated=True, operation_id='storage_file_read')
 @api_view(['GET'])
 def get_file_view(request, project_pk, task_pk, filename):
     file = get_file(project_pk, task_pk, filename)
