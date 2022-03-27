@@ -28,7 +28,6 @@ class Task(models.Model):
     updated_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=25, choices=TaskStatus.choices, default=TaskStatus.UnComplete, null=False)
     owner = models.ForeignKey(Profile, on_delete=models.CASCADE)
-    # attachments
 
     def __str__(self):
         return self.title
@@ -92,7 +91,7 @@ def create_activity(sender, instance, *args, **kwargs):
             task_id=instance.id
         )
 
-    if type == 'Comment':
+    if type == 'Comment' and created:
         Activity.objects.create(
             title=title,
             type=type,

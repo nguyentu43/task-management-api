@@ -3,7 +3,6 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from asgiref.sync import sync_to_async
 from chat.serializers import MessageSerializer
 
-
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         if self.scope['user'] == None:
@@ -13,7 +12,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.project_pk = self.scope['url_route']['kwargs']['project_pk']
         self.room_group_name = 'chat_project%s' % self.project_pk
 
-        # Join room group
         await self.channel_layer.group_add(
             self.room_group_name,
             self.channel_name
@@ -22,13 +20,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.accept()
 
     async def disconnect(self, close_code):
-        # Leave room group
         await self.channel_layer.group_discard(
             self.room_group_name,
             self.channel_name
         )
 
-    # Receive message from WebSocket
     async def receive(self, text_data):
         def message_serializer(project_pk, user_id, json_data):
             text_data_json = json.loads(json_data)
@@ -40,7 +36,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 serializer.save(project_id=project_pk, owner_id=user_id)
             return serializer.data
 
-        # Send message to room group
         await self.channel_layer.group_send(
             self.room_group_name,
             {
@@ -49,7 +44,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
             }
         )
 
-    # Receive message from room group
     async def chat_message(self, event):
         message = event['message']
 

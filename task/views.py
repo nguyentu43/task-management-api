@@ -15,9 +15,7 @@ class TaskViewSet(ModelViewSetWithPermission):
     serializer_class = TaskSerializer
 
     permission_classes_by_action = {
-        'update': [IsOwner],
-        'destroy': [IsOwner],
-        'partial_update': [IsOwner]
+        'destroy': [IsOwner]
     }
 
     def get_queryset(self):
@@ -29,7 +27,7 @@ class TaskViewSet(ModelViewSetWithPermission):
 
     def perform_update(self, serializer):
         serializer.save(**self.request.data, project_id=self.kwargs['project_pk'],
-                        owner_id=self.request.user.username)
+                        )
 
     @swagger_auto_schema(methods=['get'], 
         responses={200: openapi.Response('get activities', ActivitySerializer(many=True))}
@@ -50,7 +48,7 @@ class TodoItemViewSet(ModelViewSetWithPermission):
         serializer.save(**self.request.data, owner_id=self.request.user.username, task_id=self.kwargs['task_pk'])
 
     def perform_update(self, serializer):
-        serializer.save(**self.request.data, owner_id=self.request.user.username, task_id=self.kwargs['task_pk'])
+        serializer.save(**self.request.data, task_id=self.kwargs['task_pk'])
 
 
 class CommentViewSet(ModelViewSetWithPermission):
@@ -59,8 +57,8 @@ class CommentViewSet(ModelViewSetWithPermission):
 
     permission_classes_by_action = {
         'update': [IsOwner],
-        'partial_update': [IsOwner],
-        'destroy': [IsOwner]
+        'destroy': [IsOwner],
+        'partial_update': [IsOwner]
     }
 
     def get_queryset(self):
@@ -70,7 +68,7 @@ class CommentViewSet(ModelViewSetWithPermission):
         serializer.save(**self.request.data, owner_id=self.request.user.username, task_id=self.kwargs['task_pk'])
 
     def perform_update(self, serializer):
-        serializer.save(**self.request.data, owner_id=self.request.user.username, task_id=self.kwargs['task_pk'])
+        serializer.save(**self.request.data, task_id=self.kwargs['task_pk'])
 
 class TaskByProfileViewSet(ModelViewSetWithPermission):
     serializer_class = TaskSerializer
@@ -78,7 +76,7 @@ class TaskByProfileViewSet(ModelViewSetWithPermission):
     def get_queryset(self):
         try:
             p = Profile.objects.get(id=self.request.user.username)
-            return Task.objects.filter(Q(project__owner=p) | Q(project__participants__in=[p])).distinct()
+            return Task.objects.filter(Q(project__owner=p) | Q(project__participants__in=[p])).order_by('-created_at').distinct()
         except Profile.DoesNotExist:
             return []
 

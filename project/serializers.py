@@ -13,7 +13,6 @@ class ProjectSerializer(ModelSerializer):
 
 
 class SectionSerializer(ModelSerializer):
-    project = ProjectSerializer(read_only=True)
 
     class Meta:
         model = Section
@@ -21,7 +20,6 @@ class SectionSerializer(ModelSerializer):
 
 
 class TagSerializer(ModelSerializer):
-    project = ProjectSerializer(read_only=True)
 
     class Meta:
         model = Tag

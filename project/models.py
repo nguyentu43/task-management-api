@@ -19,7 +19,6 @@ class Project(models.Model):
 class Section(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     name = models.CharField(max_length=255, blank=False, null=False)
-    order = models.IntegerField(blank=False, null=False)
     color = models.CharField(max_length=25)
 
     def __str__(self):

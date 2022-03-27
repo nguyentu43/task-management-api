@@ -39,7 +39,6 @@ class SectionViewSet(ModelViewSetWithPermission):
     permission_classes = [IsParticipantProject]
 
     def get_queryset(self):
-        print(self.request.data)
         try:
             p = Project.objects.get(pk=self.kwargs['project_pk'])
             return p.section_set.all()
@@ -59,7 +58,6 @@ class TagViewSet(ModelViewSetWithPermission):
     permission_classes = [IsParticipantProject]
 
     def get_queryset(self):
-        print(self.request.data)
         try:
             p = Project.objects.get(pk=self.kwargs['project_pk'])
             return p.tag_set.all()

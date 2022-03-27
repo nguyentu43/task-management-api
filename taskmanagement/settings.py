@@ -31,7 +31,6 @@ SECRET_KEY = 'django-insecure-^9g)sx4qu83n4q%x1i+cn+vy0u%xn*xg=1id#@s5^idv-cz=v@
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
-CSRF_TRUSTED_ORIGINS = ['https://*.herokuapp.com']
 
 # Application definition
 
@@ -184,10 +183,12 @@ CHANNEL_LAYERS = {
 DEFAULT_FILE_STORAGE = 'storages.backends.ftp.FTPStorage'
 FTP_STORAGE_LOCATION = env.get('FTP_HOST')
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:4200"
-]
+CORS_ALLOW_ALL_ORIGINS = True
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:4200",
+    "https://*.herokuapp.com",
+    "https://*.vercel.app"
 ]
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
