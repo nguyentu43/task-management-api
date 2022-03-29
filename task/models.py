@@ -23,7 +23,7 @@ class Task(models.Model):
     order = models.IntegerField(blank=False, null=False)
     section = models.ForeignKey(Section, on_delete=models.CASCADE)
     tags = models.ManyToManyField(Tag, blank=True)
-    due_datetime = models.DateTimeField(auto_now_add=True)
+    due_datetime = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=25, choices=TaskStatus.choices, default=TaskStatus.UnComplete, null=False)
@@ -36,7 +36,7 @@ class Task(models.Model):
 class TodoItem(models.Model):
     title = models.CharField(max_length=255, blank=False, null=False)
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
-    due_datetime = models.DateTimeField(auto_now_add=True)
+    due_datetime = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     participants = models.ManyToManyField(Profile, blank=True)
     owner = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='owner')
