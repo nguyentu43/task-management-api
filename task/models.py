@@ -24,6 +24,8 @@ class Task(models.Model):
     section = models.ForeignKey(Section, on_delete=models.CASCADE)
     tags = models.ManyToManyField(Tag, blank=True)
     due_datetime = models.DateTimeField(blank=True, null=True)
+    start_datetime = models.DateTimeField(blank=True, null=True)
+    end_datetime = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=25, choices=TaskStatus.choices, default=TaskStatus.UnComplete, null=False)
@@ -106,6 +108,13 @@ def create_activity(sender, instance, *args, **kwargs):
                 type=type,
                 task_id=instance.task_id,
                 content='{} has created a todo "{}"'.format(instance.owner, instance.title)
+            )
+        if instance.is_done:
+            Activity.objects.create(
+                title=title,
+                type=type,
+                task_id=instance.task_id,
+                content='{} has checked done todo "{}"'.format(instance.owner, instance.title)
             )
 
 
