@@ -1,6 +1,6 @@
 from django.http import HttpResponse
 from rest_framework.decorators import api_view, permission_classes, parser_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from storages.backends.ftp import FTPStorageException
 
 from .forms import UploadFileForm
@@ -46,6 +46,7 @@ def get_files_view(request, project_pk, task_pk):
 
 @swagger_auto_schema(method='get', deprecated=True, operation_id='storage_file_read')
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def get_file_view(request, project_pk, task_pk, filename):
     file = get_file(project_pk, task_pk, filename)
     content_type = mimetypes.guess_type(file.name)[0]
