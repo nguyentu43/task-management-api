@@ -1,8 +1,7 @@
 from rest_framework.serializers import ModelSerializer
-from .models import Activity, Task, Comment, TodoItem
+from .models import Activity, Task, TodoItem, Comment
 from project.serializers import SectionSerializer, TagSerializer, ProjectSerializer
 from profile.serializers import ProfileSerializer
-
 
 class TaskSerializer(ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)

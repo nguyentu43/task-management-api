@@ -1,11 +1,9 @@
 from django.db import models
 from django.db.models.signals import pre_save, post_save
-from django.forms import model_to_dict
 
 from taskmanagement.db.receivers import set_updated_at_pre_save
 from profile.models import Profile
 from project.models import Tag, Section, Project
-
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 import json
@@ -122,12 +120,12 @@ post_save.connect(create_activity, sender=TodoItem)
 post_save.connect(create_activity, sender=Comment)
 post_save.connect(create_activity, sender=Task)
 
-
 def send_activity_ws(sender, instance, *args, **kwargs):
     user_set = set(instance.task.project.participants.values_list('id', flat=True))
     user_set.add(instance.task.project.owner.id)
 
-    text_data = json.dumps(model_to_dict(instance));
+    from task.serializers import ActivitySerializer
+    text_data = json.dumps(ActivitySerializer(instance).data)
 
     try:
         for user_id in user_set:
